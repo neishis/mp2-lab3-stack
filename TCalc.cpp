@@ -1,187 +1,214 @@
 #include "TCalc.h"
 #include <iostream>
 #include "TStack.h"
-
-int TCalc::prior(char a)
+int TCalc::GetPriority(char op)
 {
-    if (a == '^')
-        return 3;
-    else if (a == '*' || a == '/')
-        return 2;
-    else if (a == '+' || a == '-')
-        return 1;
-    return 0;
+	if (op == '+' || op == '-')
+	{
+		return 1;
+	}
+	if (op == '*' || op == '/')
+	{
+		return 2;
+	}
+	if (op == '^')
+	{
+		return 3;
+	}
+	return 0;
 }
 
-TCalc::TCalc()
-{
-    TStack<double> StNum;
-    TStack<char> StOwn;
-}
 
-void TCalc::ToPostfix()
-{
-    postfix = "";
-    StOwn.clear();
-
-    string str = "(" + infix + ")";
-    if (!StOwn.checkThrow(infix)) {
-        throw - 1;
-    }
-    for (int i = 0; i < str.length(); i++) {
-        if (str[i] == '(') {
-            StOwn.push('(');
-        }
-
-        else if (str[i - 1] == '(' && str[i] == '-') {
-            postfix += '_';
-        }
-        else if (isdigit(str[i]) || str[i] == '.') {
-            postfix += str[i];
-        }
-
-        else if (str[i] == ')') {
-            char a = StOwn.pop();
-            while (a != '(') {
-                postfix += a;
-                postfix += ' ';
-                a = StOwn.pop();
-            }
-        }
-
-        else if (str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '/' || str[i] == '^')
-        {
-            while (prior(StOwn.top()) >= prior(str[i]))
-                postfix += StOwn.pop();
-            StOwn.push(str[i]);
-        }
-        else
-            throw - 1;
-    }
-    if (StOwn.empty() == 0)
-        throw - 1;
-}
-
-double TCalc::Calculate() {
-    string str = "(" + infix + ")";
-    StNum.clear();
-    StOwn.clear();
-    if (!StOwn.checkThrow(infix)) {
-        throw - 1;
-    }
-    for (int i = 0; i < str.size(); i++) {
-        char tmp = str[i];
-        if (tmp == '(') {
-            StOwn.push(tmp);
-        }
-        else if (str[i - 1] == '(' && tmp == '-') {
-            str[i] = '_';
-        }
-        else if (i > 0 && tmp >= '0' && tmp <= '9' && str[i - 1] == '_')
-        {
-            size_t idx;
-            double num = stod(&tmp, &idx);
-            StNum.push(num * (-1.0));
-            i += idx - 1;
-        }
-        else if (tmp >= '0' && tmp <= '9' || tmp == '.') {
-            size_t idx;
-            double num = stod(&tmp, &idx);
-            StNum.push(num);
-            i += idx - 1;
-        }
-        if (tmp == ')') {
-            char a = StOwn.pop();
-            while (a != '(') {
-                double secondNum = StNum.pop();
-                double firstNum = StNum.pop();
-                if (a == '+') StNum.push(firstNum+secondNum);
-                if (a == '-') StNum.push(firstNum - secondNum);
-                if (a == '*') StNum.push(firstNum * secondNum);
-                if (a == '/') {
-                    if (secondNum == 0) {
-                        throw string("division by 0");
-                    }
-                    StNum.push(firstNum / secondNum);
-                }
-                if (a == '^') {
-                    double res = 1;
-                    for (int i = 0; i < secondNum; i++) {
-                        res = res * firstNum;
-                    }
-                    StNum.push(res);
-                }
-                a = StOwn.pop();
-            }
-        }
-        if (tmp == '+' || tmp == '-' || tmp == '*' || tmp == '/' || tmp == '^') {
-            while (prior(StOwn.top()) >= prior(tmp)) {
-                double secondNum = StNum.pop();
-                double firstNum = StNum.pop();
-                char a = StOwn.pop();
-                if (a == '+') StNum.push(firstNum + secondNum); 
-                if (a == '-') StNum.push(firstNum - secondNum);
-                if (a == '*') StNum.push(firstNum * secondNum);
-                if (a == '/') {
-                    if (secondNum == 0) {
-                        throw string("division by 0");
-                    }
-                    StNum.push(firstNum / secondNum);
-                }
-                if (a == '^') {
-                    double res = 1;
-                    for (int i = 0; i < secondNum; i++) {
-                        res = res * firstNum;
-                    }
-                    StNum.push(res);
-                }
-            }
-            StOwn.push(tmp);
-        }
-    }
-    if (StNum.empty() == 0)
-        throw - 1;
-    return (StNum.pop());
-}
 
 double TCalc::CalcPostfix()
 {
-    StNum.clear();
-    for (int i = 0; i < postfix.size(); i++) {
-        if (i > 0 && postfix[i] >= '0' && postfix[i] <= '9' && postfix[i - 1] == '_')
-            StNum.push((postfix[i] - '0') * (-1));
-        else if (postfix[i] >= '0' && postfix[i] <= '9') {
-            StNum.push(postfix[i] - '0');
-        }
-        else {
-            double secondNum = StNum.pop();
-            double firstNum = StNum.pop();
-            switch (postfix[i]) {
-            case '+':
-                StNum.push(firstNum + secondNum);
-                break;
-            case '-':
-                StNum.push(firstNum - secondNum);
-                break;
-            case '*':
-                StNum.push(firstNum * secondNum);
-                break;
-            case '/':
-                StNum.push(firstNum / secondNum);
-                break;
-            case '^':
-                double res = 1;
-                for (int i = 0; i < secondNum; i++) {
-                    res = res * firstNum;
-                }
-                StNum.push(res);
-                break;
-            }
-        }
-    }
-    if (!(StNum.empty())) {
-        throw string ("Stack isn't empty");
-    }
-    return StNum.pop();
-    
+	StNum.clear();
+	string number = "";
+
+	for (int i = 0; i < postfix.size(); i++)
+	{
+		char sim = postfix[i];
+
+		if (isdigit(sim) || sim == '.')
+		{
+			number += sim;		// собираем число
+		}
+		else if (sim == ' ' && !number.empty())
+		{
+			double num = stod(number);
+			StNum.push(num);
+			//cout << "Добавлено число в стек: " << num << endl; // Для отладки
+			number = "";
+		}
+		else if (sim == '+' || sim == '-' || sim == '*' || sim == '/' || sim == '^' || sim == '~')
+		{
+			if (StNum.getNum() < 1)
+			{
+				throw - 1;
+			}
+			double secondNum = StNum.pop();
+			double firstNum = StNum.pop();
+			double result = PerformOperation(firstNum, secondNum, postfix[i]);
+			StNum.push(result);
+		}
+	}
+
+	if (!number.empty()) {
+		double val = stod(number);
+		StNum.push(val);
+	}
+	if (StNum.getNum() != 0)
+	{
+		throw "Ошибка: неверное количество операндов в выражении";
+	}
+	double result = StNum.pop();
+	return result;
+}	
+
+
+
+void TCalc::ToPostfix()
+{
+	postfix = "";
+	StChar.clear();
+	string number = "";
+
+	for (int i = 0; i < infix.size(); i++)
+	{
+		char sim = infix[i];
+		if (isdigit(sim) || sim == '.')
+		{
+			number += sim;  // собираем число (включая десятичную точку)
+			if (i == infix.size() - 1 || (!isdigit(infix[i + 1]) && infix[i + 1] != '.'))		// проверка, что после числа идет пробел или символ операции
+			{
+				postfix += number + " ";
+				number = "";
+			}
+		}
+		else if (sim == '(')
+		{
+			StChar.push(sim);
+		}
+		else if (sim == ')')
+		{
+			while (!StChar.empty() && StChar.top() != '(')
+			{
+				postfix += StChar.pop();
+				postfix += " ";
+			}
+			StChar.pop();
+		}
+		else if (sim == '+' || sim == '-' || sim == '*' || sim == '/' || sim == '^')
+		{
+			while (!StChar.empty() && GetPriority(StChar.top()) >= GetPriority(sim))
+			{
+				postfix += StChar.pop();
+				postfix += " ";
+			}
+			StChar.push(sim);
+		}
+	}
+	while (!StChar.empty())		// перемещаем оставшиеся операторы из стека в постфиксное выражение
+	{
+		postfix += StChar.pop();
+		postfix += " ";
+	}
+}
+
+
+
+
+double TCalc::Calc()
+{
+	string str = "(" + infix + ")";
+	StNum.clear();
+	StChar.clear();
+
+	if (!StChar.checkThrow(infix))			// проверяем корректность скобок на парность
+	{
+		throw "ошибка: некорректное выражение (непарные скобки)!";
+	}
+
+	for (int i = 0; i < str.size(); ++i)
+	{
+		char tmp = str[i];
+
+		if (tmp == '(')
+		{
+			StChar.push(tmp);		// помещаем в стек операторов
+		}
+		else if (tmp == '-')
+		{
+			if (i == 0 || str[i - 1] == '(')		// проверка на унарный минус
+			{
+				str[i] = '_';		// обозначаем унарный минус как отдельный символ
+			}
+			else					// это бинарный минус
+			{
+				while (!StChar.empty() && GetPriority(StChar.top()) >= GetPriority(tmp))		// выполняем все операции из стека >= по приоритету
+				{
+					char op = StChar.pop();
+					double secondNum = StNum.pop();
+					double firstNum = StNum.pop();
+					StNum.push(PerformOperation(firstNum, secondNum, op));
+				}
+				StChar.push(tmp);			// кладем минус в стек операторов
+			}
+		}
+		else if (isdigit(tmp) || tmp == '.')		// цифра или точка
+		{
+			size_t idx;
+			double num = stod(str.substr(i), &idx);		// преобразование строки в число
+			StNum.push(num);							// кладем в стек чисел
+			i += idx - 1;
+		}
+		else if (tmp == ')')
+		{
+			while (!StChar.empty() && StChar.top() != '(')		// вычисляем все операции в текущих скобках 
+			{
+				char op = StChar.pop();
+				double num2 = StNum.pop();
+				double num1 = StNum.pop();
+				StNum.push(PerformOperation(num1, num2, op));
+			}
+			StChar.pop();				// убираем открывающую скобку
+		}
+		else if (tmp == '+' || tmp == '*' || tmp == '/' || tmp == '^')
+		{			// выполняем все операции с приоритетом >= текущей
+			while (!StChar.empty() && GetPriority(StChar.top()) >= GetPriority(tmp)) {
+				char op = StChar.pop();
+				double num2 = StNum.pop();
+				double num1 = StNum.pop();
+				StNum.push(PerformOperation(num1, num2, op));
+			}
+			StChar.push(tmp);
+		}
+		else if (tmp == '_')		// преобразуем в отрицательное число 
+		{
+			size_t idx;
+			double num = stod(str.substr(i + 1), &idx);
+			//double num = atof(&str[i + 1]);			// *** - пример работы - внизу кода
+			//StNum.push(-num);
+			i += idx;
+		}
+	}
+	if (StNum.getNum() != 0) {
+		throw "Ошибка: неверное количество операндов в выражении!";
+	}
+	return StNum.pop();
+}
+
+
+
+double TCalc::PerformOperation(double num1, double num2, char op) {
+	switch (op) {
+	case '+': return num1 + num2;
+	case '-': return num1 - num2;
+	case '*': return num1 * num2;
+	case '/':
+		if (num2 == 0) throw "Ошибка: деление на ноль!";
+		return num1 / num2;
+	case '^': return pow(num1, num2);
+	default: throw "Ошибка: неизвестная операция!";
+	}
 }

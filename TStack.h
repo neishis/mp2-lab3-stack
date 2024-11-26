@@ -1,30 +1,11 @@
-#pragma once
+п»ї#pragma once
 #include <iostream>
 #include <string>
-//          ЧТО С ПОМОЩЬЮ ТАКОГО СТЕКА МОЖНО СДЕЛАТЬ?
-/*
-Проверить в (2+2)*2 правильность расстановки скобок
-bool Check(string st2){
-TStack<char> s;
-bool res=true;
-for(int i=0;i<st2.size)+();i++){
-if (st2[i]=='(')s.push'(');
-if(st2[i]==')'){
-if(s.epmty())return false; s.pop();
-}
-}
-if(!s.empty()) return false;
-return true;
-}
 
-
-
-
-*/
 using namespace std;
 
 const int MAX_STACK_SIZE = 10000;
-//+-*^/ как доп задание-функции, могут быть скобки, вычислить выражение заданной строки
+
 
 template <class T>
 class TStack {
@@ -36,21 +17,41 @@ public:
     TStack(const TStack& st);
 
     TStack& operator =(const TStack<T>& st);
-    bool operator == (TStack<T>& st);
-    bool operator != (TStack<T>& st);
+    bool operator == (const TStack& st) const;
+    bool operator != (const TStack& st) const;
 
     bool empty() const;
     bool full() const;
-    T getNum();
+    int getNum();
 
     T pop();
     T top() const;
     void push(T val);
     void clear();
     bool checkThrow(string str);
+
+    // Р’РІРѕРґ СЌР»РµРјРµРЅС‚Р° РІ СЃС‚РµРє
+    friend istream& operator>>(istream& in, TStack& s)
+    {
+        T val;
+        cout << "Р’РІРµРґРёС‚Рµ СЌР»РµРјРµРЅС‚С‹ СЃС‚РµРєР° (РІРІРµРґРёС‚Рµ 0 РґР»СЏ Р·Р°РІРµСЂС€РµРЅРёСЏ): ";
+        while (in >> val && val != 0) {
+            s.Push(val);
+        }
+        return in;
+    }
+
+    // Р’С‹РІРѕРґ СЌР»РµРјРµРЅС‚Р° РёР· СЃС‚РµРєР°
+    friend ostream& operator<<(ostream& out, const TStack& s)
+    {
+        for (int i = 0; i <= s.Num; i++) {
+            out << s.pMem[i] << " ";
+        }
+        return out;
+    }
 };
 
-//Конструктор
+
 template <class T>
 TStack<T>::TStack(int _MaxSize) {
     if (_MaxSize<0 || _MaxSize>MAX_STACK_SIZE) throw string("incorrect size");
@@ -59,24 +60,27 @@ TStack<T>::TStack(int _MaxSize) {
     pMem = new T[MaxSize];
 }
 
-//Деструктор
+
 template <class T>
 TStack<T>::~TStack() {
     delete[] pMem;
 }
 
-//Конструктор копирования
+
 template<class T>
 TStack<T>::TStack(const TStack<T>& st) {
+    if (st.MaxSize < 0 || st.MaxSize > MAX_STACK_SIZE || st.Num < -1 || st.Num >= st.MaxSize)
+        throw - 1;
+
     MaxSize = st.MaxSize;
     Num = st.Num;
     pMem = new T[MaxSize];
-    for (int i = 0; i < Num; i++) {
+    for (int i = 0; i < Num+1; i++) {
         pMem[i] = st.pMem[i];
     }
 }
 
-//Оператор присваивания
+
 template<class T>
 TStack<T>& TStack<T>::operator =(const TStack<T>& st)
 {
@@ -87,30 +91,30 @@ TStack<T>& TStack<T>::operator =(const TStack<T>& st)
             pMem = new T[MaxSize];
         }
         Num = st.Num;
-        for (int i = 0; i < Num; i++) pMem[i] = st.pMem[i];
+        for (int i = 0; i < Num + 1; i++) pMem[i] = st.pMem[i];
     }
     return *this;
 }
 
-//Операторы сравнения
+
 template<class T>
-bool TStack<T>::operator==(TStack<T>& st)
+bool TStack<T>::operator==( const TStack& st) const
 {
     if (this == &st) return true;
     if (MaxSize != st.MaxSize || Num != st.Num) return false;
-    for (int i = 0; i < Num; i++) {
+    for (int i = 0; i < Num + 1; i++) {
         if (pMem[i] != st.pMem[i]) return false;
     }
     return true;
 }
 
 template<class T>
-bool TStack<T>::operator!=(TStack<T>& st)
+bool TStack<T>::operator!=(const TStack& st) const
 {
     return !(*this==st);
 }
 
-//Проверка на полноту
+
 template<class T>
 bool TStack<T>::full() const
 {
@@ -118,7 +122,7 @@ bool TStack<T>::full() const
     return false;
 }
 
-//Проверка на пустоту
+
 template<class T>
 bool TStack<T>::empty() const
 {
@@ -126,10 +130,13 @@ bool TStack<T>::empty() const
     return false;
 }
 
-//Удаление последнего элемента из стека
+
 template<class T>
 T TStack<T>::pop() {
-    if (this->empty()) throw string ("Stack is empty");
+    if (empty()) {
+        throw string("Stack is empty"); 
+        
+    }
     T tmp = pMem[Num];
     Num--;
     return tmp;
@@ -138,13 +145,16 @@ T TStack<T>::pop() {
 template<class T>
 T TStack<T>::top() const
 {
+    if (empty()) {
+        throw string("Stack is empty");
+    }
     return pMem[Num];
 }
 
-//Добавление элемента в стек
+
 template<class T>
 void TStack<T>::push(T val) {
-    if (this->full()) throw string("Stack is full");
+    if (full()) throw string("Stack is full");
     Num++;
     pMem[Num] = val;
 }
@@ -156,9 +166,9 @@ template<class T>
 }
 
  template <class T>
- T TStack<T>::getNum()
+ int TStack<T>::getNum()
  {
-     return pMem[Num];
+     return Num;
  }
 
  template <class T>

@@ -3,27 +3,33 @@
 #include <string>
 #include "TStack.h"
 
-class TCalc {
+class TCalc
+{
+	string infix, postfix;
+	TStack <double> StNum;
+	TStack <char> StChar;
 
-    string infix;
-    string postfix;
-
-    TStack<double> StNum;
-    TStack<char> StOwn;
-
-    int prior(char a);
 public:
+	void ToPostfix();			// преобразовать из infix в postfix
+	double CalcPostfix();		// перевод в постфиксную форму
+	double Calc();				// вычисления по постфиксной записи
 
-    void SetInfix(string inf) { infix = inf; };
-    void SetPostfix(string post) { postfix = post; };
-    string GetInfix() { return infix; };
-    string GetPostfix() { return postfix; };
+	double PerformOperation(double firstNum, double secondNum, char op);		// алгоритм обратной польской нотации
 
-    TCalc();
+	int GetPriority(char op);	// выдача приоритета для операций
 
-    void ToPostfix();
-    double CalcPostfix();
-    double Calculate();
+	void SetInfix(const string& stroka)
+	{
+		infix = stroka;
+	}
+	string GetPostfix() const
+	{
+		return postfix;
+	}
+	string GetInfix() const
+	{
+		return infix;
+	}
 };
 
 
